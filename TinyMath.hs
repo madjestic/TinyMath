@@ -43,35 +43,10 @@ isDivisableBy n m = let fullNumber = fromInteger $ round (n/m)
 -- | Prime spiral
 -- |
 
-mono1 :: (Enum a, Num a) => Int -> [a]
-mono1 n = let mon = concatMap (\x -> [x,x]) (take n [1..])
+double :: (Enum a, Num a) => Int -> [a]
+double n = let mon = concatMap (\x -> [x,x]) (take n [1..])
           in mon
 
-
-mono2 :: Num a => [t] -> [a]
-mono2 list = concat $ rowPairs list
-    where
-        rowPairs [] = []
-        rowPairs (_:_:xs) = [1,0] : rowPairs xs
-
-
--- mono3 list p = concat $ rowPairs list p
---    where
---        rowPairs [] _ = []
---        rowPairs (_:_:xs) (x,y) = [(x+1,y),(x+1,y+1)] : rowPairs' xs (x,y)
---        rowPairs' [] _ = []
---        rowPairs' (_:_:xs) (x,y) = [(x-1,y),(x-1,y-1)] : rowPairs xs (x,y)
-
--- mono4 [] _ = []
--- mono4 (_:_:xs) (x,y) = [(x+1,y),(x+1,y+1)] : mono4 xs (x,y)
-
--- mono5 _ 0 = []
--- mono5 f k = f : mono5 f (k-1)
-
--- | in <- [1,1,2,2,3,3,4,4,...n,n] p@(x,y)
--- mono6 list p = concat $ walkSpiral list p
-
---walkSpiral (stepsRight:stepsUp:stepsLeft:stepsDown:xs) p = walkRight stepsRight p
 
 data Direction = Right'
                | Up
@@ -102,9 +77,8 @@ offset (x,y) (direction, steps)
                        stepDown  = (x,y-1)
                        
 --traverse 
+--  concat $ map (offset (0,0)) $ zip (directions $ double 2) (double 2)
 
--- (+) :: (Int, Int) -> (Int, Int) -> (Int, Int)
--- (+) (x1,y1) (x2,y2) = (x1+x2,y1+y2)
 
 instance (Num a, Num b) => Num (a, b) where
          (x1,y1) + (x2,y2) = (x1+x2, y1+y2)
