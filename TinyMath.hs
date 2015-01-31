@@ -1,29 +1,35 @@
 module TinyMath.TinyMath where
 
+type Matrix2D = (Float, Float,
+                 Float, Float)
+
+type Point2D  = (Float, Float)
+
 -- |
 -- | Prime Factorisation
 -- |
 
--- | isPrime1 n k is just an interface function for isPrime
-isPrime1 :: RealFrac a => a -> Bool
-isPrime1 n 
+-- | isPrime n k is just an interface function for isPrime'
+isPrime :: RealFrac a => a -> Bool
+isPrime n 
          | n == 1    = False
          | n == 2    = True
-         | otherwise = isPrime n 2
+         | otherwise = isPrime' n 2
 
--- | isPrime needs an index k (since we can't use variables)
-isPrime :: RealFrac a => a -> a -> Bool
-isPrime n k
+-- | isPrime' needs an index k (since we can't use variables)
+-- | it is a naive, inefficient implementation.  Be warned.
+isPrime' :: RealFrac a => a -> a -> Bool
+isPrime' n k
         | k < 2                                    = error "k must be >= 2"
         | n /= k &&     (n `isDivisableBy` k)      = False
-        | n  > k && not (n `isDivisableBy` k)      = isPrime n (k+1)
+        | n  > k && not (n `isDivisableBy` k)      = isPrime' n (k+1)
         | n == k                                   = True
 
 
 primesLessThan :: (Enum a, Integral b, RealFrac a) => a -> [b]
 primesLessThan n 
                | n <= 2 = error "argument must be > 2"
-               | otherwise = map round [x | x <- [2..n], isPrime1 x]
+               | otherwise = map round [x | x <- [2..n], isPrime x]
 
 
 -- | factorize1 function is an interface to factorize function
@@ -101,3 +107,44 @@ directions xs = concat $ directions' xs
            where                      
                  directions' [] = []
                  directions' (_:_:_:_:xs) = [Right', Up, Left', Down] : directions' xs
+
+-- | converts degrees to radians
+toRadians :: Float -> Float
+toRadians x = x*pi/180
+
+
+-- | converts radians to degrees
+fromRadians :: Float -> Float
+fromRadians x = x/pi*180
+
+rotate2D' :: Float -> [(Float, Float)] -> [(Float, Float)]
+rotate2D' a = map (rotate2D a)
+
+rotate2D :: Float -> (Float, Float) -> (Float, Float)
+rotate2D theta (x,y) = (x',y')
+         where
+            x' = x * cos theta - y * sin theta
+            y' = x * sin theta + y * cos theta
+
+
+normalize :: (Float, Float) -> (Float, Float)
+normalize v@(x,y) = (x*len', y*len')
+          where
+            len' = 1.0/len v
+
+len :: (Float, Float) -> Float
+len (x,y) = sqrt(x*x+y*y)
+
+
+-- | multiply matrix by vector
+mulMatrVect :: Matrix2D -> (Float, Float) -> (Float, Float)
+mulMatrVect (x1,x2,y1,y2) (x,y) = ((x1+x2)*x,(y1+y2)*y)
+
+
+addVectors :: (Float, Float) -> (Float, Float) -> (Float, Float)
+addVectors (x1,y1) (x2,y2) = (x1+x2, y1+y2)
+
+
+unzip4 :: ([b3], [b2], [b1], [b]) -> [(b3, b2, b1, b)]
+unzip4 (a,b,c,d) = repeat (,,,) `zipApply` a `zipApply` b `zipApply` c `zipApply` d
+                           where zipApply = zipWith ($)
