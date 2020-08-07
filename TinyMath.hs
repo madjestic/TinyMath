@@ -1,5 +1,45 @@
 module TinyMath.TinyMath where
 
+import Graphics.Rendering.Chart.Easy
+import Graphics.Rendering.Chart.Backend.Cairo
+
+----------------------------------------------------------
+--- Plotting ---------------------------------------------
+----------------------------------------------------------
+
+border :: [(Double, Double)]
+border = [(-max', -max'),(max', max')]
+
+plotMe :: [(Double, Double)] -> IO ()
+plotMe ex = 
+  toFile def "Session1.2.png" $
+  do
+    layout_title .= "Sketch the following sets of points in the x-y plane."
+    setColors [opaque red]
+    plot (points "points" (border ++ ex))
+
+----------------------------------------------------------
+
+int :: Double -> Integer
+int = (toInteger . round)
+
+n   = [1..(int max')]
+z   = [-(int max')..(int max')]
+
+r ::[Double]
+r = [-max',(-max' + mrg) .. max']
+
+max' :: Double
+max' = 5.0
+
+-- | mrg - margine
+mrg :: Double
+mrg = 0.001
+(~=) :: Double -> Double -> Bool
+(~=) x y = x > (y - mrg) && x < (y + mrg)
+
+----------------------------------------------------------
+
 type Matrix2D = (Float, Float,
                  Float, Float)
 
@@ -81,15 +121,15 @@ offset (direction, steps)
          | direction == Down   = (0,-1) : offset (Down  ,(steps - 1))
 
                        
-traverse :: Num a => a -> [a] -> [a]
-traverse _ []     = []
-traverse p (x:xs) = p + x : traverse (p + x) xs
+traverse1 :: Num a => a -> [a] -> [a]
+traverse1 _ []     = []
+traverse1 p (x:xs) = p + x : traverse1 (p + x) xs
 
 
 
-traverse1 :: (Num t, Num t1, Num t2) => t2 -> (t, t1) -> [(t, t1)] -> [(t, t1, t2)]
-traverse1 _ _ []     = []
-traverse1 k p (x:xs) = (\((a,b),c) -> (a,b,c)) (p + x, k) : traverse1 (k+1) (p + x) xs
+traverse11 :: (Num t, Num t1, Num t2) => t2 -> (t, t1) -> [(t, t1)] -> [(t, t1, t2)]
+traverse11 _ _ []     = []
+traverse11 k p (x:xs) = (\((a,b),c) -> (a,b,c)) (p + x, k) : traverse11 (k+1) (p + x) xs
 
 
 
