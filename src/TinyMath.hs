@@ -1,4 +1,4 @@
-module TinyMath.TinyMath where
+module TinyMath where
 
 import Graphics.Rendering.Chart.Easy
 import Graphics.Rendering.Chart.Backend.Cairo
@@ -110,8 +110,6 @@ instance Eq Direction where
          Down   == Down   = True
          _ == _ = False
 
-
-
 offset :: (Eq t, Num t, Num t1, Num t2) => (Direction, t) -> [(t1, t2)]
 offset (_,0) = []
 offset (direction, steps)
@@ -119,22 +117,17 @@ offset (direction, steps)
          | direction == Up     =  (0,1) : offset (Up    ,(steps - 1))
          | direction == Left'  = (-1,0) : offset (Left' ,(steps - 1))
          | direction == Down   = (0,-1) : offset (Down  ,(steps - 1))
-
                        
-traverse1 :: Num a => a -> [a] -> [a]
-traverse1 _ []     = []
-traverse1 p (x:xs) = p + x : traverse1 (p + x) xs
-
-
+-- traverse1 :: Num a => a -> [a] -> [a]
+-- traverse1 _ []     = []
+-- traverse1 p (x:xs) = p + x : traverse1 (p + x) xs
 
 traverse11 :: (Num t, Num t1, Num t2) => t2 -> (t, t1) -> [(t, t1)] -> [(t, t1, t2)]
 traverse11 _ _ []     = []
 traverse11 k p (x:xs) = (\((a,b),c) -> (a,b,c)) (p + x, k) : traverse11 (k+1) (p + x) xs
 
-
-
 walkSpiral :: (Num t, Num t1, Num t2) => (t, t1) -> Int -> [(t, t1, t2)]
-walkSpiral p size = traverse1 1 p $ concat $ map offset $ zip (directions $ size') (size')
+walkSpiral p size = traverse11 1 p $ concat $ map offset $ zip (directions $ size') (size')
            where
               size' = double (size*2)
 
