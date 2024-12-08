@@ -1,0 +1,46 @@
+cabal-version:      3.4
+name:               TinyMath
+version:            0.1.0.0
+synopsis:           Experimental Math Lib
+-- description:
+license:            BSD-3-Clause
+license-file:       LICENSE
+author:             madiestic
+maintainer:         madjestic13@gmail.com
+-- copyright:
+category:           Math
+build-type:         Simple
+extra-doc-files:    CHANGELOG.md
+-- extra-source-files:
+
+common warnings
+    ghc-options: -Wall
+
+library
+    import:           warnings
+    exposed-modules:  TinyMath
+                    , Arithmetic
+                    , RealArithmetic
+    -- other-modules:
+    -- other-extensions:
+    build-depends:    base ^>=4.18.2.1
+                    , Chart
+                    , Chart-cairo
+                    , linear
+                    , massiv
+    hs-source-dirs:   src
+    default-language: GHC2021
+
+executable TinyMath
+    import:           warnings
+    main-is:          Main.hs
+    -- other-modules:
+    -- other-extensions:
+    ghc-options:   -threaded -O2    
+    build-depends:
+          base ^>=4.18.2.1
+        , TinyMath
+        , containers
+
+    hs-source-dirs:   app
+    default-language: GHC2021

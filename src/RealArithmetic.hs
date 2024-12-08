@@ -55,7 +55,7 @@ consWith x op y
 assocsWith :: [a] -> String -> [Assoc a]
 assocsWith []  _             = []
 assocsWith [x] _             = [Leaf x]
-assocsWith (x:y:xs) (op:ops) = consWith x op =<< assocsWith (y:xs) (ops)
+assocsWith (x:y:xs) (op:ops) = consWith x op =<< assocsWith (y:xs) ops
 assocsWith _  []             = []
 
 ------------------------------------------------------------------------------------
@@ -121,7 +121,7 @@ parseRealOrParenExpr tokens
       (RealT n : restTokens) -> Just (RealLit n,   restTokens)
       (OpenP : restTokens) ->
         case parseSumOrProdOrRealOrParenExpr restTokens of
-          Just (expr, (CloseP : restTokens)) -> Just (expr, restTokens)
+          Just (expr, CloseP : restTokens) -> Just (expr, restTokens)
           Just _  -> Nothing -- no closing paren
           Nothing -> Nothing
       _ -> Nothing
@@ -129,11 +129,11 @@ parseRealOrParenExpr tokens
 parseProdOrRealOrParenExpr :: [Token] -> Maybe (Expr, [Token])
 parseProdOrRealOrParenExpr tokens
   = case parseRealOrParenExpr tokens of
-      Just (expr1, (MultT : restTokens)) ->
+      Just (expr1, MultT : restTokens) ->
           case parseProdOrRealOrParenExpr restTokens of
             Just (expr2, restTokens) -> Just (Mult expr1 expr2, restTokens)
             Nothing                  -> Nothing
-      Just (expr1, (DivT : restTokens)) ->
+      Just (expr1, DivT : restTokens) ->
           case parseProdOrRealOrParenExpr restTokens of
             Just (expr2, restTokens) -> Just (Div expr1 expr2, restTokens)
             Nothing                  -> Nothing
@@ -142,11 +142,11 @@ parseProdOrRealOrParenExpr tokens
 parseSumOrProdOrRealOrParenExpr :: [Token] -> Maybe (Expr, [Token])
 parseSumOrProdOrRealOrParenExpr tokens
   = case parseProdOrRealOrParenExpr tokens of
-      Just (expr1, (PlusT : restTokens)) ->
+      Just (expr1, PlusT : restTokens) ->
           case parseSumOrProdOrRealOrParenExpr restTokens of
             Just (expr2, restTokens) -> Just (Add expr1 expr2, restTokens)
             Nothing                  -> Nothing
-      Just (expr1, (MinusT : restTokens)) ->
+      Just (expr1, MinusT : restTokens) ->
           case parseSumOrProdOrRealOrParenExpr restTokens of
             Just (expr2, restTokens) -> Just (Sub expr1 expr2, restTokens)
             Nothing                  -> Nothing
@@ -163,9 +163,9 @@ parse tokens =
 -- EVALUATE --
 ------------------------------------------------------------------------------------
 -- | λ> map (eval . parse . lexer) ["(1*2)/4", "3/0", "2+2"]
--- > [0,0,4]
+-- | > [0,0,4]
 -- | \> ((eval . parse . lexer) "(2.5+3.5)*2.5") == ((eval . parse . lexer) "10 + 5")
--- > True
+-- | > True
 eval :: Expr -> Double
 eval expr
   = case expr of
@@ -174,18 +174,20 @@ eval expr
       (Sub  expr1 expr2) -> eval expr1 - eval expr2
       (Mult expr1 expr2) -> eval expr1 * eval expr2
       (Div  expr1 expr2) ->
-        if (eval expr2) /= 0
+        if eval expr2 /= 0
           then eval expr1 / eval expr2
           else 0
 
 eval' :: String -> Double
 eval' = eval . parse . lexer
+-- | \> (eval' "10 + 5") == (eval' "5.5 + 9.5")
+-- | > True
 ------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------
 ------------------------------------------------------------------------------------
 formula :: [[Double]] -> [String]
 formula xs =
-  fmap show $ (concat . concat) [fmap (assocsWith x) (combinations ((length x) - 1) "+-*/") | x <- xs]
+  show <$> (concat . concat) [fmap (assocsWith x) (combinations (length x - 1) "+-*/") | x <- xs]
 
 solve :: [Double] -> [Double]
 solve xs = map (eval . parse . lexer) $ (formula . permutations) xs
@@ -194,15 +196,16 @@ solve' :: [Double] -> IO ()
 solve' xs = do
   let set         = xs
   let ss          = solve set
-  let diff        = ([1..(maximum ss)+1] \\ ss)
-  -- putStrLn $ "ss (solution set)     : " ++ show ss
+  let diff        = [1..maximum ss+1] \\ ss
+  putStrLn $ "ss (solution set)     : " ++ show ss
   -- putStrLn $ "first NN not in the ss: " ++ show diff
-  putStrLn $ "solution for " ++ show set ++ " : \n" ++ (show $ head diff) ++ "\n"
+  putStrLn $ "solution for " ++ show set ++ " : \n" ++ show (head diff) ++ "\n"
 
 main :: IO ()
 main = do
   solve' [1..2]
-  solve' [1..3]
-  solve' [1..4]
-  solve' [1..5]
-  solve' [1..6]
+  -- solve' [1..3]
+  -- solve' [1..4]
+  -- solve' [1..5]
+  solve' [0,11,12]
+  -- solve' [1..6]
