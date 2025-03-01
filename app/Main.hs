@@ -24,4 +24,5 @@ main = do
       baz = (\ (x,y) -> zip x y ) $ (length <$>) &&& (toList . fromList <$>) $ group "aaaabbbcca"
   --putStrLn "Hello, Haskell!"
   print $ multiply 1 2
+  length' [1,2,3] >>= print
   pure ()

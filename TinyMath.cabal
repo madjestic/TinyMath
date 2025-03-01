@@ -37,7 +37,8 @@ library
                     , template-haskell
     hs-source-dirs:   src
     c-sources:        src/halff.c
-
+                    , src/mult.c
+                    , src/length.c
     default-language: GHC2021
 
 executable TinyMath
