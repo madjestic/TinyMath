@@ -21,3 +21,13 @@ int multiply2(int n, int a) {
 	if (n == 1) return a;
 	return mult_acc4(a, n - 1, a);
 }
+
+int multiply4(int n, int a) {
+	while (!odd(n)) {
+		a = a + a;
+		n = half(n);
+	}
+	if (n == 1) return a;
+    // even(n − 1) =⇒ n − 1 ̸= 1
+	return mult_acc4(a, half(n - 1), a + a);
+}

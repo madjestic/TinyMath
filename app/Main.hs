@@ -25,4 +25,5 @@ main = do
   --putStrLn "Hello, Haskell!"
   print $ multiply 1 2
   length' [1,2,3] >>= print
+  exampleDoubleIntArray >>= print
   pure ()

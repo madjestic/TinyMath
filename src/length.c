@@ -1,6 +1,7 @@
 // length.c
 #include <stdio.h>
+#include "length.h"
 
 int length(int array[]){
-    return 1 + sizeof(array) / sizeof(int); 
+    return sizeof(array) / sizeof(int); 
 }
