@@ -5,6 +5,8 @@ import Data.Set          (toList, fromList)
 import Control.Arrow
 import RealArithmetic
 
+import Egyptian as Egyptian
+
 f :: [Char] -> [(Int, [Char])]
 f x = zip (length <$> group x) (toSet <$> group x)
   where
@@ -21,4 +23,5 @@ main = do
       bar = (\x -> zip (length <$> x) (toList . fromList <$> x)) $ group "aaaabbbcca"
       baz = (\ (x,y) -> zip x y ) $ (length <$>) &&& (toList . fromList <$>) $ group "aaaabbbcca"
   --putStrLn "Hello, Haskell!"
+  print $ multiply 1 2
   pure ()

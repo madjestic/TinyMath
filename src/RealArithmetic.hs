@@ -14,10 +14,10 @@ import Debug.Trace as DT
 type Length = Int
 
 combinations :: Length -> [a] -> [[a]]
-combinations size set =
-  [ x |  x <- cs size set, length x == size]
+combinations size set' =
+  [ x |  x <- cs size set', length x == size]
   where
-    cs size xs = [1..size] >>= \n -> mapM (const xs) [1..n]
+    cs size set' = [1..size] >>= \n -> mapM (const set') [1..n]
 
 ------------------------------------------------------------------------------------
 -- ASSOCIATION VARIANTS --
@@ -194,12 +194,12 @@ solve xs = map (eval . parse . lexer) $ (formula . permutations) xs
 
 solve' :: [Double] -> IO ()
 solve' xs = do
-  let set         = xs
-  let ss          = solve set
+  let set'         = xs
+  let ss          = solve set'
   let diff        = [1..maximum ss+1] \\ ss
-  putStrLn $ "ss (solution set)     : " ++ show ss
+  putStrLn $ "ss (solution set')     : " ++ show ss
   -- putStrLn $ "first NN not in the ss: " ++ show diff
-  putStrLn $ "solution for " ++ show set ++ " : \n" ++ show (head diff) ++ "\n"
+  putStrLn $ "solution for " ++ show set' ++ " : \n" ++ show (head diff) ++ "\n"
 
 main :: IO ()
 main = do

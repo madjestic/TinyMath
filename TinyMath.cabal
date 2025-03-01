@@ -1,4 +1,4 @@
-cabal-version:      3.4
+cabal-version:      3.8
 name:               TinyMath
 version:            0.1.0.0
 synopsis:           Experimental Math Lib
@@ -15,12 +15,17 @@ extra-doc-files:    CHANGELOG.md
 
 common warnings
     ghc-options: -Wall
+                 -O2
+                 -threaded
+    extra-lib-dirs-static:
+                   /usr/lib/clang/19/include/stdbool.h
 
 library
     import:           warnings
     exposed-modules:  TinyMath
                     , Arithmetic
                     , RealArithmetic
+                    , Egyptian
     -- other-modules:
     -- other-extensions:
     build-depends:    base ^>=4.18.2.1
@@ -28,7 +33,11 @@ library
                     , Chart-cairo
                     , linear
                     , massiv
+                    , inline-c
+                    , template-haskell
     hs-source-dirs:   src
+    c-sources:        src/halff.c
+
     default-language: GHC2021
 
 executable TinyMath
@@ -36,11 +45,12 @@ executable TinyMath
     main-is:          Main.hs
     -- other-modules:
     -- other-extensions:
-    ghc-options:   -threaded -O2    
+    -- ghc-options:                   
     build-depends:
           base ^>=4.18.2.1
         , TinyMath
         , containers
+        , inline-c
 
     hs-source-dirs:   app
     default-language: GHC2021
