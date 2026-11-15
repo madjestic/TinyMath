@@ -1,10 +1,11 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE DeriveFoldable #-}
 {-# LANGUAGE FlexibleContexts #-}
-module Arithmetic where
+module Numeric.Tiny.Arithmetic where
 
 import Data.Char
-import Data.List
+import Data.List (permutations, (\\))
+
 
 type Length = Int
 
@@ -12,7 +13,7 @@ combinations :: Length -> [a] -> [[a]]
 combinations size set =
   [ x |  x <- cs size set, (length x) == size]
   where
-    cs size xs = [1..size] >>= \n -> mapM (const xs) [1..n]
+    cs size' xs = [1..size'] >>= \n -> mapM (const xs) [1..n]
 
 ------------------------------------------------------------------------------------
 -- ASSOCIATION VARIANTS --
@@ -74,25 +75,22 @@ lexer ('*' : restStr) = MultT    : lexer restStr
 lexer ('/' : restStr) = DivT     : lexer restStr 
 lexer ('(' : restStr) = OpenP    : lexer restStr 
 lexer (')' : restStr) = CloseP   : lexer restStr
-lexer (chr : restStr) 
-  | isSpace chr       = lexer restStr
-lexer str@(chr : _) 
-  | isDigit chr
+lexer (chr' : restStr) 
+  | isSpace chr'       = lexer restStr
+lexer str@(chr' : _) 
+  | isDigit chr'
   = IntT (stringToInt digitStr) : lexer restStr
   where
      (digitStr, restStr) = break (not . isDigit) str
-     -- local function to convert a string to an integer value
-     stringToInt :: String -> Int
-     stringToInt = foldl (\acc chr -> 10 * acc + digitToInt chr) 0
 -- runtime error for all other characters:
-lexer (chr : restString) 
-  = error ("lexer: unexpected character: '" ++ [chr] ++ "'")
+lexer (chr' : _) 
+  = error ("lexer: unexpected character: '" ++ [chr'] ++ "'")
 
 notIsDigit :: Char -> Bool
 notIsDigit = not . isDigit
 
 stringToInt :: String -> Int
-stringToInt = foldl (\acc chr -> 10 * acc + digitToInt chr) 0
+stringToInt = foldl (\acc chr' -> 10 * acc + digitToInt chr') 0
 
 ------------------------------------------------------------------------------------
 -- PARSER --
@@ -112,7 +110,7 @@ parseIntOrParenExpr tokens
       (IntT n : restTokens) -> Just (IntLit n,   restTokens)
       (OpenP : restTokens) -> 
         case parseSumOrProdOrIntOrParenExpr restTokens of
-          Just (expr, (CloseP : restTokens)) -> Just (expr, restTokens)
+          Just (expr, (CloseP : restTokens')) -> Just (expr, restTokens')
           Just _  -> Nothing -- no closing paren
           Nothing -> Nothing
       _ -> Nothing
@@ -122,11 +120,11 @@ parseProdOrIntOrParenExpr tokens
   = case parseIntOrParenExpr tokens of
       Just (expr1, (MultT : restTokens)) -> 
           case parseProdOrIntOrParenExpr restTokens of
-            Just (expr2, restTokens) -> Just (Mult expr1 expr2, restTokens)
+            Just (expr2, restTokens') -> Just (Mult expr1 expr2, restTokens')
             Nothing                  -> Nothing
       Just (expr1, (DivT : restTokens)) -> 
           case parseProdOrIntOrParenExpr restTokens of
-            Just (expr2, restTokens) -> Just (Div expr1 expr2, restTokens)
+            Just (expr2, restTokens') -> Just (Div expr1 expr2, restTokens')
             Nothing                  -> Nothing
       result -> result   
 
@@ -135,11 +133,11 @@ parseSumOrProdOrIntOrParenExpr tokens
   = case parseProdOrIntOrParenExpr tokens of
       Just (expr1, (PlusT : restTokens)) -> 
           case parseSumOrProdOrIntOrParenExpr restTokens of
-            Just (expr2, restTokens) -> Just (Add expr1 expr2, restTokens)
+            Just (expr2, restTokens') -> Just (Add expr1 expr2, restTokens')
             Nothing                  -> Nothing
       Just (expr1, (MinusT : restTokens)) -> 
           case parseSumOrProdOrIntOrParenExpr restTokens of
-            Just (expr2, restTokens) -> Just (Sub expr1 expr2, restTokens)
+            Just (expr2, restTokens') -> Just (Sub expr1 expr2, restTokens')
             Nothing                  -> Nothing
       result -> result
 
@@ -183,7 +181,10 @@ solve' xs = do
   let diff        = ([1..(maximum ss)+1] \\ ss)
   -- putStrLn $ "ss (solution set)     : " ++ show ss
   -- putStrLn $ "first NN not in the ss: " ++ show diff
-  putStrLn $ "solution for " ++ show set ++ " : \n" ++ (show $ head diff) ++ "\n"  
+  putStrLn $ "solution for " ++ show set ++ " : \n" ++ (show $ firstMissing (maximum ss + 1) diff) ++ "\n"  
+  where
+    firstMissing _ (d : _) = d
+    firstMissing fallback [] = fallback
 
 main :: IO ()
 main = do

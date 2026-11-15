@@ -2,10 +2,9 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module Egyptian where
+module Numeric.Tiny.Egyptian where
 
 import Foreign.C.Types
-import Foreign.Marshal.Array (withArray)
 --import Unsafe.Coerce
 import qualified Language.C.Inline as C
 import Foreign.Ptr (Ptr)

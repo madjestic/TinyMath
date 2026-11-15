@@ -1,4 +1,6 @@
-module TinyMath where
+-- Orphan instance for pairs; silence the intentional orphan warning.
+{-# OPTIONS_GHC -Wno-orphans #-}
+module Numeric.Tiny.Math where
 
 import Graphics.Rendering.Chart.Easy
 import Graphics.Rendering.Chart.Backend.Cairo
@@ -21,10 +23,12 @@ plotMe ex =
 ----------------------------------------------------------
 
 int :: Double -> Integer
-int = (toInteger . round)
+int = round
 
-n   = [1..(int max')]
-z   = [-(int max')..(int max')]
+ns :: [Integer]
+ns = [1..(int max')]
+zs :: [Integer]
+zs = [-(int max')..(int max')]
 
 r ::[Double]
 r = [-max',(-max' + mrg) .. max']
@@ -64,6 +68,7 @@ isPrime' n k
         | n /= k &&     (n `isDivisableBy` k)      = False
         | n  > k && not (n `isDivisableBy` k)      = isPrime' n (k+1)
         | n == k                                   = True
+        | otherwise                                = False
 
 
 primesLessThan :: (Enum a, Integral b, RealFrac a) => a -> [b]
@@ -82,6 +87,7 @@ factorize n k
           | k >= n = n : []
           | n `isDivisableBy` k          = k : factorize (n/k) k
           | n `isDivisableBy` k == False = factorize n (k+1)
+          | otherwise                    = []
 
 
 isDivisableBy :: RealFrac a => a -> a -> Bool
@@ -116,7 +122,7 @@ offset (direction, steps)
          | direction == Right' =  (1,0) : offset (Right',(steps - 1))
          | direction == Up     =  (0,1) : offset (Up    ,(steps - 1))
          | direction == Left'  = (-1,0) : offset (Left' ,(steps - 1))
-         | direction == Down   = (0,-1) : offset (Down  ,(steps - 1))
+         | otherwise           = (0,-1) : offset (Down  ,(steps - 1))
                        
 -- traverse1 :: Num a => a -> [a] -> [a]
 -- traverse1 _ []     = []
@@ -127,19 +133,27 @@ traverse11 _ _ []     = []
 traverse11 k p (x:xs) = (\((a,b),c) -> (a,b,c)) (p + x, k) : traverse11 (k+1) (p + x) xs
 
 walkSpiral :: (Num t, Num t1, Num t2) => (t, t1) -> Int -> [(t, t1, t2)]
-walkSpiral p size = traverse11 1 p $ concat $ map offset $ zip (directions $ size') (size')
+walkSpiral p size = traverse11 (fromInteger 1) p $ concat $ map offset $ zip (directions size') size'
            where
+              size' :: [Int]
               size' = double (size*2)
 
 instance (Num a, Num b) => Num (a, b) where
          (a,b) + (c,d) = (a+c, b+d)
+         (a,b) * (c,d) = (a*c, b*d)
+         (a,b) - (c,d) = (a-c, b-d)
+         negate (a,b)  = (negate a, negate b)
+         abs (a,b)     = (abs a, abs b)
+         signum (a,b)  = (signum a, signum b)
+         fromInteger n = (fromInteger n, fromInteger n)
 
 
 directions :: [t] -> [Direction]
 directions xs = concat $ directions' xs
            where                      
                  directions' [] = []
-                 directions' (_:_:_:_:xs) = [Right', Up, Left', Down] : directions' xs
+                 directions' (_:_:_:_:xs') = [Right', Up, Left', Down] : directions' xs'
+                 directions' _ = []
 
 -- | converts degrees to radians
 toRadians :: Float -> Float

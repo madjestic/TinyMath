@@ -2,22 +2,19 @@
 {-# LANGUAGE DeriveFoldable #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE TypeApplications #-}
-module RealArithmetic where
+module Numeric.Tiny.RealArithmetic where
 
-import Data.Char
-import Data.List
-import GHC.Float
-import Data.Bifunctor
+import Data.Char hiding (chr)
+import Data.List (permutations, (\\))
 
-import Debug.Trace as DT
 
 type Length = Int
 
 combinations :: Length -> [a] -> [[a]]
-combinations size set' =
-  [ x |  x <- cs size set', length x == size]
+combinations size set =
+  [ x |  x <- cs size set, length x == size]
   where
-    cs size set' = [1..size] >>= \n -> mapM (const set') [1..n]
+    cs size' set' = [1..size'] >>= \n -> mapM (const set') [1..n]
 
 ------------------------------------------------------------------------------------
 -- ASSOCIATION VARIANTS --
@@ -87,18 +84,23 @@ lexer str@(chr : '.' : chr' : _)
   | isDigit chr && isDigit chr'
   = RealT real : lexer restStr
   where
-    (real, restStr) = head $ reads @Double str
+    (real, restStr) = head' (reads @Double str)
 lexer str@(chr : _)
   | isDigit chr
   = RealT real : lexer restStr
   where
-    (real, restStr) = head $ reads @Double str
+    (real, restStr) = head' (reads @Double str)
 -- runtime error for all other characters:
-lexer (chr : restString)
+lexer (chr : _)
   = error ("lexer: unexpected character: '" ++ [chr] ++ "'")
 
 notIsDigit :: Char -> Bool
 notIsDigit = not . isDigit
+
+-- | Total 'head' for the (guaranteed non-empty) 'reads' result.
+head' :: [a] -> a
+head' (x : _) = x
+head' []      = error "RealArithmetic: reads returned no parse"
 
 -- stringToReal :: String -> Double
 -- stringToReal = foldl (\ chr -> 10 *  + digitToInt chr) 0
@@ -121,7 +123,7 @@ parseRealOrParenExpr tokens
       (RealT n : restTokens) -> Just (RealLit n,   restTokens)
       (OpenP : restTokens) ->
         case parseSumOrProdOrRealOrParenExpr restTokens of
-          Just (expr, CloseP : restTokens) -> Just (expr, restTokens)
+          Just (expr, CloseP : restTokens') -> Just (expr, restTokens')
           Just _  -> Nothing -- no closing paren
           Nothing -> Nothing
       _ -> Nothing
@@ -131,11 +133,11 @@ parseProdOrRealOrParenExpr tokens
   = case parseRealOrParenExpr tokens of
       Just (expr1, MultT : restTokens) ->
           case parseProdOrRealOrParenExpr restTokens of
-            Just (expr2, restTokens) -> Just (Mult expr1 expr2, restTokens)
+            Just (expr2, restTokens') -> Just (Mult expr1 expr2, restTokens')
             Nothing                  -> Nothing
       Just (expr1, DivT : restTokens) ->
           case parseProdOrRealOrParenExpr restTokens of
-            Just (expr2, restTokens) -> Just (Div expr1 expr2, restTokens)
+            Just (expr2, restTokens') -> Just (Div expr1 expr2, restTokens')
             Nothing                  -> Nothing
       result -> result
 
@@ -144,11 +146,11 @@ parseSumOrProdOrRealOrParenExpr tokens
   = case parseProdOrRealOrParenExpr tokens of
       Just (expr1, PlusT : restTokens) ->
           case parseSumOrProdOrRealOrParenExpr restTokens of
-            Just (expr2, restTokens) -> Just (Add expr1 expr2, restTokens)
+            Just (expr2, restTokens') -> Just (Add expr1 expr2, restTokens')
             Nothing                  -> Nothing
       Just (expr1, MinusT : restTokens) ->
           case parseSumOrProdOrRealOrParenExpr restTokens of
-            Just (expr2, restTokens) -> Just (Sub expr1 expr2, restTokens)
+            Just (expr2, restTokens') -> Just (Sub expr1 expr2, restTokens')
             Nothing                  -> Nothing
       result -> result
 
@@ -199,10 +201,13 @@ solve' xs = do
   let diff        = [1..maximum ss+1] \\ ss
   putStrLn $ "ss (solution set')     : " ++ show ss
   -- putStrLn $ "first NN not in the ss: " ++ show diff
-  putStrLn $ "solution for " ++ show set' ++ " : \n" ++ show (head diff) ++ "\n"
+  putStrLn $ "solution for " ++ show set' ++ " : \n" ++ show (firstMissing (maximum ss + 1) diff) ++ "\n"
+  where
+    firstMissing _ (d : _) = d
+    firstMissing fallback []      = fallback
 
-main :: IO ()
-main = do
+example :: IO ()
+example = do
   solve' [1..2]
   -- solve' [1..3]
   -- solve' [1..4]

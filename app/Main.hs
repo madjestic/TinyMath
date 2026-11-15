@@ -2,10 +2,9 @@ module Main where
 
 import Data.List         (group)
 import Data.Set          (toList, fromList)
-import Control.Arrow
-import RealArithmetic
 
-import Egyptian as Egyptian
+import Numeric.Tiny.RealArithmetic
+import Numeric.Tiny.Egyptian as Egyptian
 
 f :: [Char] -> [(Int, [Char])]
 f x = zip (length <$> group x) (toSet <$> group x)
@@ -19,10 +18,9 @@ e' = eval . parse . lexer
 
 main :: IO ()
 main = do
-  let foo = zip (length <$> group "aaaabbbcca") (toList . fromList <$> group "aaaabbbcca")
-      bar = (\x -> zip (length <$> x) (toList . fromList <$> x)) $ group "aaaabbbcca"
-      baz = (\ (x,y) -> zip x y ) $ (length <$>) &&& (toList . fromList <$>) $ group "aaaabbbcca"
-  --putStrLn "Hello, Haskell!"
+  -- let foo = zip (length <$> group "aaaabbbcca") (toList . fromList <$> group "aaaabbbcca")
+  --     bar = (\x -> zip (length <$> x) (toList . fromList <$> x)) $ group "aaaabbbcca"
+  --     baz = (\ (x,y) -> zip x y ) $ (length <$>) &&& (toList . fromList <$>) $ group "aaaabbbcca"
   print $ multiply 1 2
   length' [1,2,3] >>= print
   exampleDoubleIntArray >>= print
